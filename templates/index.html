@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Markov Chatbot</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background-color: #f4f4f4; 
+            margin: 20px;
+        }
+        
+        #chatbox { 
+            width: 50%; 
+            margin: auto; 
+            height: 300px; 
+            overflow-y: scroll; 
+            border: 2px solid #333; 
+            padding: 10px; 
+            background: white; 
+            text-align: left; 
+            border-radius: 10px;
+        }
+
+        .message { 
+            padding: 10px; 
+            margin: 5px; 
+            border-radius: 8px; 
+            max-width: 75%;
+        }
+
+        .user { 
+            background-color: #d1e7fd; 
+            text-align: right; 
+            margin-left: auto;
+        }
+
+        .bot { 
+            background-color: #d4edda; 
+            text-align: left; 
+            margin-right: auto;
+        }
+
+        input, button { 
+            padding: 10px; 
+            margin-top: 10px; 
+            border-radius: 5px; 
+            border: 1px solid brown; 
+        }
+
+        button { 
+            background-color: #007bff; 
+            color: white; 
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .slider-container {
+            width: 50%;
+            margin: 15px auto;
+            text-align: left;
+        }
+
+        .slider-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            background: cyan;
+            outline: none;
+            border-radius: 5px;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+            appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 0, 255, 0.523);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: lightblue;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .dropdown-container {
+            width: 50%;
+            margin: 15px auto;
+            text-align: left;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background-color: white;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        async function sendMessage() {
+            let userMessage = document.getElementById("userInput").value;
+            let order = document.getElementById("orderSlider").value;
+            let length = document.getElementById("lengthSlider").value;
+            let context = document.getElementById("contextSlider").value;
+            let dataset = document.getElementById("datasetPicker").value;
+
+            document.getElementById("chatbox").innerHTML += `<p class='message user'><b>You:</b> ${userMessage}</p>`;
+
+            let response = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    message: userMessage,
+                    order: order,
+                    length: length,
+                    context: context,
+                    dataset: dataset
+                })
+            });
+
+            let data = await response.json();
+            document.getElementById("chatbox").innerHTML += `<p class='message bot'><b>Bot:</b> ${data.response}</p>`;
+            document.getElementById("userInput").value = "";
+
+            document.getElementById("chatbox").scrollTop = document.getElementById("chatbox").scrollHeight;
+        }
+    </script>
+</head>
+<body>
+    <h2>Markov Chatbot</h2>
+
+    <div id="chatbox"></div>
+    
+    <input type="text" id="userInput" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+
+    <h3>Settings</h3>
+
+    <div class="dropdown-container">
+        <label class="slider-label">Select Dataset:</label>
+        <select id="datasetPicker">
+            <option value="casual">Casual conversations</option>
+            <option value="bible">King James Bible</option>
+            <option value="eminem">Eminem Lyrics</option>
+        </select>
+    </div>
+
+    <div class="slider-container">
+        <label class="slider-label">Markov Order: <span id="orderValue">2</span></label>
+        <input type="range" class="slider" id="orderSlider" min="1" max="4" value="2" oninput="orderValue.innerText=this.value">
+    </div>
+
+    <div class="slider-container">
+        <label class="slider-label">Response Length: <span id="lengthValue">20</span></label>
+        <input type="range" class="slider" id="lengthSlider" min="10" max="200" value="20" oninput="lengthValue.innerText=this.value">
+    </div>
+
+    <div class="slider-container">
+        <label class="slider-label">Context Size: <span id="contextValue">2</span></label>
+        <input type="range" class="slider" id="contextSlider" min="1" max="5" value="2" oninput="contextValue.innerText=this.value">
+    </div>
+
+</body>
+</html>
